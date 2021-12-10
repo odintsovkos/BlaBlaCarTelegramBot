@@ -6,10 +6,13 @@ async def request_geocoder_api(city):
 
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
-            response_text = await response.json()
-            if len(response_text) != 0:
-                latitude = response_text[0]['lat']
-                longitude = response_text[0]['lon']
-                return [latitude, longitude]
+            if response.status == 200:
+                response_text = await response.json()
+                if len(response_text) != 0:
+                    latitude = response_text[0]['lat']
+                    longitude = response_text[0]['lon']
+                    return [latitude, longitude]
+                else:
+                    return False
             else:
                 return False

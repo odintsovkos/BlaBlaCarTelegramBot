@@ -1,5 +1,5 @@
+from aiogram.types import Message, ReplyKeyboardRemove
 from utils.db_api import db
-from keyboards.default import menu
 from keyboards.inline import message_keyboard
 from loader import dp
 from utils.notify_admins import admins_notify
@@ -47,7 +47,7 @@ async def validation_response(message, response_api, status):
             return True
         # Уведомление пользователя о том, что Поездки не найдены
         else:
-            await message.answer("Поездок на эти данные не найдено", reply_markup=menu)
+            await message.answer("Поездок на эти данные не найдено")
 
             await admins_notify(dp, f'{message.from_user.id}, {message.from_user.username}\n'
                                     f'[INFO] Поездки не найдены'
@@ -65,10 +65,15 @@ async def validation_response(message, response_api, status):
         return False
 
 
-async def preparation_message(message, response_api_list, status):
+async def preparation_message(message: Message, response_api_list, status):
     trips_list = []
     for response in response_api_list:
         if await validation_response(message, response, status):
+            db.insert_data_to_database(message.from_user.id,
+                                       message.from_user.first_name,
+                                       message.from_user.last_name,
+                                       message.from_user.username,
+                                       response)
             for trip_num in range(len(response['trips'])):
                 trips_list.append(response['trips'][trip_num])
     return trips_list
@@ -84,4 +89,4 @@ async def send_message(message, response_api_list, status):
         await message.answer(trip_message(num, trips[num]),
                              reply_markup=message_keyboard.create_inline_keyboard(num, trips[num]))
 
-    await message.answer("Спасибо за то, что воспользовались данным Ботом", reply_markup=menu)
+    await message.answer("Спасибо за то, что воспользовались данным Ботом", reply_markup=ReplyKeyboardRemove())

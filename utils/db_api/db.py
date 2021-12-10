@@ -4,6 +4,9 @@ from psycopg2 import Error
 from data import config
 from . import insert_to_db
 from . import select_from_db
+from . import delete_data
+from utils.notify_admins import admins_notify
+from loader import dp
 
 
 def open_connect():
@@ -19,6 +22,7 @@ def open_connect():
         return conn, cur
     except (Exception, Error) as error:
         print("Ошибка при подключении к базе данных,", error)
+        admins_notify(dp, f"Ошибка при подключении к базе данных, {error}")
 
 
 def insert_data_to_database(telegram_id, first_name, last_name, username, response_api):
@@ -26,7 +30,11 @@ def insert_data_to_database(telegram_id, first_name, last_name, username, respon
     try:
         connection, cursor = open_connect()
 
+        delete_data.delete_all_data_from_table(cursor, "from_location", "to_location", "traveler_trips", "trip")
+
+        # Получаем данные о пользователях из базы
         database_traveler_id = select_from_db.get_traveler_id_from_database(cursor=cursor, telegram_id=telegram_id)
+        # Проверяем есть ли пользователь в базе. Если есть то используем его ID, иначе по умолчанию заносим его в базу
         if database_traveler_id is None:
             insert_to_db.insert_db_traveler_data(cursor=cursor, telegram_id=telegram_id, first_name=first_name,
                                                  last_name=last_name,
@@ -66,6 +74,7 @@ def insert_data_to_database(telegram_id, first_name, last_name, username, respon
             connection.commit()
     except (Exception, Error) as error:
         print("Ошибка в транзакции. Отмена всех остальных операций транзакции", error)
+        admins_notify(dp, f"Ошибка в транзакции. Отмена всех остальных операций транзакции, {error}")
         connection.rollback()
     finally:
         if connection:

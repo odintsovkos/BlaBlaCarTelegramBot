@@ -6,8 +6,8 @@ import datetime
 from loader import dp
 from states.location import Locations
 from utils.misc.geocoder_api import request_geocoder_api
-
 from utils.misc import blablacar_api, format_message_trips
+from keyboards.default import cancel
 
 
 @dp.message_handler(state=Locations.from_location, content_types=types.ContentTypes.TEXT)
@@ -16,7 +16,7 @@ async def answer_from_location(message: types.Message, state: FSMContext):
     answer_list = await request_geocoder_api(answer)
     if answer_list:
         await state.update_data(answer1=answer_list)
-        await message.answer("Введите город назначения")
+        await message.answer("Введите город назначения", reply_markup=cancel)
         await Locations.next()
     else:
         await message.answer("Не удается найти данный город")
@@ -31,10 +31,10 @@ async def answer_to_location(message: types.Message, state: FSMContext):
         date = str(datetime.date.today()).split('-')
         await message.answer("Напишите дату поездки в формате\n"
                              "ДД ММ ГГГГ\n"
-                             f"Пример: {date[2]} {date[1]} {date[0]}")
+                             f"Пример: {date[2]} {date[1]} {date[0]}", reply_markup=cancel)
         await Locations.next()
     else:
-        await message.answer("Не удается найти данный город")
+        await message.answer("Не удается найти данный город", reply_markup=cancel)
 
 
 @dp.message_handler(state=Locations.date_trip)
@@ -46,11 +46,11 @@ async def answer_to_location(message: types.Message, state: FSMContext):
         time = time_and_time[1].split(':')
         await message.answer("Напишите время поездки в формате\n"
                              "ЧЧ ММ\n"
-                             f"Пример: {time[0]} {time[1]}")
+                             f"Пример: {time[0]} {time[1]}",reply_markup=cancel)
 
         await Locations.next()
     else:
-        await message.answer('Неверный ввод!')
+        await message.answer('Неверный ввод!', reply_markup=cancel)
 
 
 @dp.message_handler(state=Locations.time_trip)
@@ -74,4 +74,4 @@ async def answer_to_location(message: types.Message, state: FSMContext):
 
         await state.finish()
     else:
-        await message.answer('Неверный ввод!')
+        await message.answer('Неверный ввод!', reply_markup=cancel)
