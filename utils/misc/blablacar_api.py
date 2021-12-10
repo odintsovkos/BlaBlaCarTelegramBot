@@ -19,15 +19,16 @@ async def request_blablacar_api(from_location_data, to_location_data, date_data,
             result = await response.json()
             responses.append(result)
         status = response.status
-        next_cursor = result['next_cursor']
-        while next_cursor != 0:
-            url_next = url + f"&from_cursor={next_cursor}"
-            async with session.get(url_next) as response_next:
-                result_next = await response_next.json()
-                responses.append(result_next)
-            if 'next_cursor' in result_next:
-                next_cursor = result_next['next_cursor']
-            else:
-                next_cursor = 0
+        if 'next_cursor' in result:
+            next_cursor = result['next_cursor']
+            while next_cursor != 0:
+                url_next = url + f"&from_cursor={next_cursor}"
+                async with session.get(url_next) as response_next:
+                    result_next = await response_next.json()
+                    responses.append(result_next)
+                if 'next_cursor' in result_next:
+                    next_cursor = result_next['next_cursor']
+                else:
+                    next_cursor = 0
 
     return responses, status
