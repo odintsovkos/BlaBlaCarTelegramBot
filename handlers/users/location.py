@@ -16,7 +16,7 @@ async def answer_from_location(message: types.Message, state: FSMContext):
     answer_list = await request_geocoder_api(answer)
     if answer_list:
         await state.update_data(answer1=answer_list)
-        await message.answer("Введите город назначения", reply_markup=cancel)
+        await message.answer("Введите город назначения", reply_markup=cancel.cancel)
         await Locations.next()
     else:
         await message.answer("Не удается найти данный город")
@@ -31,10 +31,10 @@ async def answer_to_location(message: types.Message, state: FSMContext):
         date = str(datetime.date.today()).split('-')
         await message.answer("Напишите дату поездки в формате\n"
                              "ДД ММ ГГГГ\n"
-                             f"Пример: {date[2]} {date[1]} {date[0]}", reply_markup=cancel)
+                             f"Пример: {date[2]} {date[1]} {date[0]}", reply_markup=cancel.cancel)
         await Locations.next()
     else:
-        await message.answer("Не удается найти данный город", reply_markup=cancel)
+        await message.answer("Не удается найти данный город", reply_markup=cancel.cancel)
 
 
 @dp.message_handler(state=Locations.date_trip)
@@ -46,11 +46,11 @@ async def answer_to_location(message: types.Message, state: FSMContext):
         time = time_and_time[1].split(':')
         await message.answer("Напишите время поездки в формате\n"
                              "ЧЧ ММ\n"
-                             f"Пример: {time[0]} {time[1]}",reply_markup=cancel)
+                             f"Пример: {time[0]} {time[1]}",reply_markup=cancel.cancel)
 
         await Locations.next()
     else:
-        await message.answer('Неверный ввод!', reply_markup=cancel)
+        await message.answer('Неверный ввод!', reply_markup=cancel.cancel)
 
 
 @dp.message_handler(state=Locations.time_trip)
@@ -70,8 +70,8 @@ async def answer_to_location(message: types.Message, state: FSMContext):
                                                                          time_data.split())
 
         # Проверка ответа от сервиса и отправка сообщений с поездками пользователю
-        await format_message_trips.send_message(message, response_api, status)
+        await format_message_trips.send_message(message, response_api, status,)
 
         await state.finish()
     else:
-        await message.answer('Неверный ввод!', reply_markup=cancel)
+        await message.answer('Неверный ввод!', reply_markup=cancel.cancel)

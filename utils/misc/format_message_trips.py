@@ -1,8 +1,10 @@
 from aiogram.types import Message, ReplyKeyboardRemove
 from keyboards.inline import message_keyboard
 from loader import dp
+from states.state_main_menu import MainMenu
 from utils.notify_admins import admins_notify
 import datetime
+from keyboards.default import keyb_main_menu
 
 
 def title_message(count):
@@ -80,4 +82,5 @@ async def send_message(message, response_api_list, status):
             await message.answer(trip_message(num, trips[num]),
                                  reply_markup=message_keyboard.create_inline_keyboard(num, trips[num]))
 
-    await message.answer("Спасибо за то, что воспользовались данным Ботом", reply_markup=ReplyKeyboardRemove())
+    await message.answer("Спасибо за то, что воспользовались данным Ботом", reply_markup=keyb_main_menu.main_menu)
+    await MainMenu.main_menu.set()
